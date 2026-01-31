@@ -22,8 +22,8 @@ public class RobotContainer {
     // Command blinkCommand = new LEDBlinkCommand(ledSubsystem).ignoringDisable(true);
     // CommandScheduler.getInstance().schedule(blinkCommand);
 
-    LEDPattern solidBlue = LEDPattern.solid(Color.kBlue);
-    LEDPattern blinking = solidBlue.blink(Seconds.of(0.5)).atBrightness(Percent.of(100));
+    LEDPattern solidBlue = LEDPattern.solid(Color.kWhite);
+    LEDPattern blinking = solidBlue.blink(Seconds.of(0.5)).atBrightness(Percent.of(10));
     Command blinkCommand = ledSubsystem.runPattern(blinking).ignoringDisable(true);
     CommandScheduler.getInstance().schedule(blinkCommand);
   }
