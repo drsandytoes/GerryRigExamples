@@ -16,6 +16,12 @@ public interface TunableMotorInterface {
     public void setFOCCurrent(double current);
 
     /**
+     * Command a closed loop voltage velocity setting
+     * @param velocity in motor rps
+     */
+    public void setVelocityVoltage(double velocity);
+
+    /**
      * Method to fetch the current velocity as measured by the motor.
      * @return velocity (RPS)
      */
