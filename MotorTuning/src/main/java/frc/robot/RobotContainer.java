@@ -4,14 +4,11 @@
 
 package frc.robot;
 
-import java.util.DoubleSummaryStatistics;
-
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.networktables.DoubleSubscriber;
@@ -31,6 +28,7 @@ public class RobotContainer {
   DoubleSubscriber kVSubscriber;
   DoubleSubscriber kPSubscriber;
   DoubleSubscriber kDSubscriber;
+  DoubleSubscriber rateSubscriber;
 
   public RobotContainer() {
     var config = new TalonFXConfiguration();
@@ -39,16 +37,22 @@ public class RobotContainer {
 
     tunableMotor = new TunableMotorSubsystem(motor);
 
-    // Good-ish values:
+    // Good-ish values for VelocityVoltage (test shooter)
     // kS = 0.28
     // kV = 0.122
     // kP = .15
     // kD = 0.05
 
+    // Good-ish values for FOC (test shooter)
+    // kS = 2.8 (2.6 when warmed)
+    // CTRE says kV not needed in Torque mode because stator current is used directly
+    // kP = (18-20 range?)
+
     kSSubscriber = DogLog.tunable("Tuning/kS", 0.0, this::ReconfigureMotorConstants);
     kVSubscriber = DogLog.tunable("Tuning/kV", 0.0, this::ReconfigureMotorConstants);
     kPSubscriber = DogLog.tunable("Tuning/kP", 0.0, this::ReconfigureMotorConstants);
     kDSubscriber = DogLog.tunable("Tuning/kD", 0.0, this::ReconfigureMotorConstants);
+    rateSubscriber = DogLog.tunable("Tuning/target rot rate", 25.0);
 
     ReconfigureMotorConstants(0.0);
 
@@ -57,15 +61,15 @@ public class RobotContainer {
 
   private void configureBindings() {
     // KS
-    controller.L1().whileTrue(new TuneTorqueConstantsCommand(Constants.Tuning.Torque.KS.minCurrent, Constants.Tuning.Torque.KS.maxCurrent, Constants.Tuning.Torque.KS.trials, Constants.Tuning.Torque.KS.trialSeconds, tunableMotor));
+    // controller.L1().whileTrue(new TuneTorqueConstantsCommand(Constants.Tuning.Torque.KS.minCurrent, Constants.Tuning.Torque.KS.maxCurrent, Constants.Tuning.Torque.KS.trials, Constants.Tuning.Torque.KS.trialSeconds, tunableMotor));
 
     // KV
-    // controller.R1().whileTrue(new TuneTorqueConstantsCommand(Constants.Tuning.Torque.KV.minCurrent, Constants.Tuning.Torque.KV.maxCurrent, Constants.Tuning.Torque.KV.trials, Constants.Tuning.Torque.KV.trialSeconds, tunableMotor));
+    // controller.L1().whileTrue(new TuneTorqueConstantsCommand(Constants.Tuning.Torque.KV.minCurrent, Constants.Tuning.Torque.KV.maxCurrent, Constants.Tuning.Torque.KV.trials, Constants.Tuning.Torque.KV.trialSeconds, tunableMotor));
 
-    controller.R1().onTrue(new SimpleVelocityCommand(25, tunableMotor));
+    controller.R1().whileTrue(new SimpleTuningVelocityCommand(rateSubscriber, tunableMotor));
   }
 
-  private void ReconfigureMotorConstants(double newValue) {
+  private void ReconfigureMotorConstants(double unused) {
     double kV = kVSubscriber.get();
     double kS = kSSubscriber.get();
     double kP = kPSubscriber.get();

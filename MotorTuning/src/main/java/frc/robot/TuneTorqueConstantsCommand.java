@@ -4,6 +4,12 @@ import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 
+/**
+ * The point of this command was to help determine the value for kV, but given that CTRE says that
+ * torque control doesn't require a kV, this could be deleted or repurposed for a voltage based
+ * system.
+ */
+
 public class TuneTorqueConstantsCommand extends Command {
     Timer timer = new Timer();
     double minCurrent = 0.0;
@@ -21,6 +27,8 @@ public class TuneTorqueConstantsCommand extends Command {
         this.maxCurrent = maxCurrent;
         this.secPerTrial = secPerTrial;
         currentStep = (maxCurrent - minCurrent) / trials;
+
+        addRequirements(subsystem);
     }
 
     @Override
